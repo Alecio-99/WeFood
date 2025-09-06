@@ -7,10 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Table(name = "usuario")
 public class Usuario {
 
@@ -24,8 +26,15 @@ public class Usuario {
     @Column(name = "PassWord")
     private String password;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date ultimaAlteracao;
+
+    @Embedded
+    private Endereco endereco;
+
     public Usuario(@Valid UsuarioDTO usuarioDTO) {
         this.email = usuarioDTO.email();
         this.name = usuarioDTO.name();
+        this.endereco = new Endereco(usuarioDTO.dadosEnderecoDTO());
     }
 }
