@@ -35,6 +35,6 @@ public class Usuario {
     public Usuario(@Valid UsuarioDTO usuarioDTO) {
         this.email = usuarioDTO.email();
         this.name = usuarioDTO.name();
-        this.endereco = new Endereco(usuarioDTO.dadosEnderecoDTO());
+        this.endereco = new Endereco(usuarioDTO.endereco());
     }
 }

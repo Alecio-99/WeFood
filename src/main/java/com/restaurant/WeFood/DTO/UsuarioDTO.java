@@ -15,7 +15,7 @@ public record UsuarioDTO(
         String password,
         @NotNull
         @Valid
-        DadosEnderecoDTO dadosEnderecoDTO
+        DadosEnderecoDTO endereco
 ) {
 
 
