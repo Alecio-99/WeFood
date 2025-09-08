@@ -23,7 +23,6 @@ public class Usuario {
     private String email;
     @Column(name = "Nome")
     private String name;
-    @Column(name = "PassWord")
     private String password;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -35,6 +34,7 @@ public class Usuario {
     public Usuario(@Valid UsuarioDTO usuarioDTO) {
         this.email = usuarioDTO.email();
         this.name = usuarioDTO.name();
+        this.password = usuarioDTO.password();
         this.endereco = new Endereco(usuarioDTO.endereco());
     }
 }

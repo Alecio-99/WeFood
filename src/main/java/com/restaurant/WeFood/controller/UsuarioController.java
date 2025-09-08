@@ -2,8 +2,10 @@ package com.restaurant.WeFood.controller;
 
 import com.restaurant.WeFood.DTO.DetalheUsuarioDTO;
 import com.restaurant.WeFood.DTO.UsuarioDTO;
+import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import com.restaurant.WeFood.entity.Usuario;
 import com.restaurant.WeFood.repository.UsuarioRepository;
+import com.restaurant.WeFood.service.ServiceFood;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,9 @@ public class UsuarioController {
     @Autowired
     UsuarioRepository usuarioRepository;
 
+    @Autowired
+    ServiceFood serviceFood;
+
     @PostMapping
   public  ResponseEntity cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO, UriComponentsBuilder uriBuilder){
       var usuario = new Usuario(usuarioDTO);
@@ -39,5 +44,10 @@ public class UsuarioController {
         }
 
         return ResponseEntity.ok(usuarios.stream().map(DetalheUsuarioDTO::new).toList());
+    }
+
+    @PostMapping("login")
+    public String login(@RequestBody ValidaLoginDTO validaLoginDTO){
+        return serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
     }
 }
