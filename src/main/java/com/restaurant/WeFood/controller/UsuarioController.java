@@ -50,4 +50,14 @@ public class UsuarioController {
     public String login(@RequestBody ValidaLoginDTO validaLoginDTO){
         return serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
     }
+
+    @PutMapping("/senha")
+    public ResponseEntity atualizarSenha(@RequestBody @Valid ValidaLoginDTO validaLoginDTO){
+       var usuario = usuarioRepository.getReferenceById(validaLoginDTO.id());
+            usuario.atualizarPassWord(validaLoginDTO);
+
+            usuarioRepository.save(usuario);
+
+          return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+    }
 }

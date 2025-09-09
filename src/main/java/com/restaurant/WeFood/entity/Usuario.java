@@ -1,6 +1,7 @@
 package com.restaurant.WeFood.entity;
 
 import com.restaurant.WeFood.DTO.UsuarioDTO;
+import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -36,5 +37,11 @@ public class Usuario {
         this.name = usuarioDTO.name();
         this.password = usuarioDTO.password();
         this.endereco = new Endereco(usuarioDTO.endereco());
+    }
+
+    public void atualizarPassWord(ValidaLoginDTO validaLoginDTO){
+        if(validaLoginDTO.password() != null){
+            this.password = validaLoginDTO.password();
+        }
     }
 }
