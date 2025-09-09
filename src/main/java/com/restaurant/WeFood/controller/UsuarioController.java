@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("usuario")
@@ -30,6 +31,11 @@ public class UsuarioController {
     @PostMapping
   public  ResponseEntity cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO, UriComponentsBuilder uriBuilder){
       var usuario = new Usuario(usuarioDTO);
+
+        Optional<Usuario> existsUser = usuarioRepository.findByEmail(usuarioDTO.email());
+        if(existsUser.isPresent()) {
+            throw new RuntimeException("O email utilizado já possui cadastro!");
+        }
       usuarioRepository.save(usuario);
 
      var uri =uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
