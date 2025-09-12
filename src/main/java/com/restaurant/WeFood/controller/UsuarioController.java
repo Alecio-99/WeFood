@@ -1,5 +1,6 @@
 package com.restaurant.WeFood.controller;
 
+import com.restaurant.WeFood.DTO.AtualizaUsuarioDTO;
 import com.restaurant.WeFood.DTO.DetalheUsuarioDTO;
 import com.restaurant.WeFood.DTO.UsuarioDTO;
 import com.restaurant.WeFood.DTO.ValidaLoginDTO;
@@ -29,18 +30,19 @@ public class UsuarioController {
     ServiceFood serviceFood;
 
     @PostMapping
-  public  ResponseEntity cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO, UriComponentsBuilder uriBuilder){
-      var usuario = new Usuario(usuarioDTO);
+    public ResponseEntity cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO, UriComponentsBuilder uriBuilder) {
+        var usuario = new Usuario(usuarioDTO);
 
         Optional<Usuario> existsUser = usuarioRepository.findByEmail(usuarioDTO.email());
-        if(existsUser.isPresent()) {
+        if (existsUser.isPresent()) {
             throw new RuntimeException("O email utilizado já possui cadastro!");
         }
-      usuarioRepository.save(usuario);
+        usuarioRepository.save(usuario);
 
-     var uri =uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
-     return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
+        var uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
+        return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
     }
+
     @GetMapping("/nome/{name}")
     public ResponseEntity<?> buscarPorNome(@PathVariable String name) {
         List<Usuario> usuarios = usuarioRepository.findByNameContainingIgnoreCase(name);
@@ -53,17 +55,28 @@ public class UsuarioController {
     }
 
     @PostMapping("login")
-    public String login(@RequestBody ValidaLoginDTO validaLoginDTO){
+    public String login(@RequestBody ValidaLoginDTO validaLoginDTO) {
         return serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
     }
 
     @PutMapping("/senha")
-    public ResponseEntity atualizarSenha(@RequestBody @Valid ValidaLoginDTO validaLoginDTO){
-       var usuario = usuarioRepository.getReferenceById(validaLoginDTO.id());
-            usuario.atualizarPassWord(validaLoginDTO);
+    public ResponseEntity atualizarSenha(@RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
+        var usuario = usuarioRepository.getReferenceById(validaLoginDTO.id());
+        usuario.atualizarPassWord(validaLoginDTO);
 
-            usuarioRepository.save(usuario);
+        usuarioRepository.save(usuario);
 
-          return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+        return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity atualizaUser(@PathVariable Long id, @RequestBody @Valid AtualizaUsuarioDTO atualizaUsuarioDTO) {
+        var usuario = usuarioRepository.getReferenceById(id);
+        usuario.atualizarUsuario(atualizaUsuarioDTO);
+
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+
     }
 }

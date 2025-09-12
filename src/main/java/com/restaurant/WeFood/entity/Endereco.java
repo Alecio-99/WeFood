@@ -30,4 +30,19 @@ public class Endereco {
 
     }
 
+    public void atualizarEndereco(DadosEnderecoDTO dadosEnderecoDTO){
+          if(dadosEnderecoDTO.rua() != null){
+              this.rua = dadosEnderecoDTO.rua();
+          }
+        if(dadosEnderecoDTO.numero() != null){
+            this.numero = dadosEnderecoDTO.numero();
+        }
+        if(dadosEnderecoDTO.cidade() != null){
+            this.cidade = dadosEnderecoDTO.cidade();
+        }
+        if(dadosEnderecoDTO.cep() != null){
+            this.cep = dadosEnderecoDTO.cep();
+        }
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.restaurant.WeFood.entity;
 
+import com.restaurant.WeFood.DTO.AtualizaUsuarioDTO;
 import com.restaurant.WeFood.DTO.UsuarioDTO;
 import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import jakarta.persistence.*;
@@ -40,8 +41,20 @@ public class Usuario {
     }
 
     public void atualizarPassWord(ValidaLoginDTO validaLoginDTO){
-        if(validaLoginDTO.password() != null){
+        if(validaLoginDTO.password() != null) {
             this.password = validaLoginDTO.password();
+        }
+
+    }
+    public void atualizarUsuario(@Valid AtualizaUsuarioDTO atualizaUsuarioDTO){
+        if (atualizaUsuarioDTO.name() != null){
+            this.name = atualizaUsuarioDTO.name();
+        }
+        if (atualizaUsuarioDTO.email() != null){
+            this.email = atualizaUsuarioDTO.email();
+        }
+        if (atualizaUsuarioDTO.endereco() != null){
+            this.endereco.atualizarEndereco(atualizaUsuarioDTO.endereco());
         }
     }
 }
