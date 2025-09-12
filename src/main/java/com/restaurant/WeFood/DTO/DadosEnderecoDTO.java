@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record DadosEnderecoDTO (
-         @NotBlank
+         @NotBlank(message = "O nome da rua não pode ser nulo ou vazio")
          String rua,
-         @NotBlank
+         @NotBlank(message = "O numero não pode ser nulo ou vazio")
          String numero,
-         @NotBlank
+         @NotBlank(message = "O nome da cidade não pode ser nulo ou vazio")
          String cidade,
-         @NotBlank
+         @NotBlank(message = "O cep não pode ser nulo ou vazio")
          @Pattern(regexp = ("\\d{8}"))
          String cep
 ){

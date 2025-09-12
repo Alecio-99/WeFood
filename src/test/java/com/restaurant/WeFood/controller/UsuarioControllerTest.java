@@ -1,5 +1,6 @@
 package com.restaurant.WeFood.controller;
 
+import com.restaurant.WeFood.controller.handlers.GlobalExceptionHandler;
 import com.restaurant.WeFood.repository.UsuarioRepository;
 import com.restaurant.WeFood.service.ServiceFood;
 import org.junit.jupiter.api.Test;
