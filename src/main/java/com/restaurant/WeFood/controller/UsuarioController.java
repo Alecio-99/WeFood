@@ -7,6 +7,7 @@ import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import com.restaurant.WeFood.entity.Usuario;
 import com.restaurant.WeFood.repository.UsuarioRepository;
 import com.restaurant.WeFood.service.ServiceFood;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("usuario")
+@Tag(name = "WeFood", description = "Controller para o crud de cadastro para o usuarios")
 public class UsuarioController {
 
     @Autowired
