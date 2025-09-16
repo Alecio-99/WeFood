@@ -14,4 +14,7 @@ public class ServiceFood {
       public String validarLogin(String email, String password){
           return valida.validar(email, password);
     }
+    public void validaSenha(String password){
+          valida.validaSenha(password);
+    }
 }

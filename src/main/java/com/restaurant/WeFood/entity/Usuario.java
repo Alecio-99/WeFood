@@ -40,9 +40,9 @@ public class Usuario {
         this.endereco = new Endereco(usuarioDTO.endereco());
     }
 
-    public void atualizarPassWord(ValidaLoginDTO validaLoginDTO){
-        if(validaLoginDTO.password() != null) {
-            this.password = validaLoginDTO.password();
+    public void atualizarPassWord(String password){
+        if(password != null) {
+            this.password = password;
         }
 
     }

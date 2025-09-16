@@ -36,4 +36,11 @@ public class ValidaLoginImpl implements ValidaLogin {
         }
         return "Login efetuado com sucesso!";
     }
+
+    @Override
+    public void validaSenha(String password) {
+        if (password == null || password.isBlank()){
+            throw new ResourceNotFoundException("É necessário informar a senha.");
+        }
+    }
 }

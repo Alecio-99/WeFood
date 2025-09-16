@@ -66,10 +66,13 @@ public class UsuarioController {
         return serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
     }
 
-    @PutMapping("/senha")
-    public ResponseEntity atualizarSenha(@RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
-        var usuario = usuarioRepository.getReferenceById(validaLoginDTO.id());
-        usuario.atualizarPassWord(validaLoginDTO);
+    @PutMapping("/senha/{id}")
+    public ResponseEntity atualizarSenha(@PathVariable Long id, @RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
+        var usuario = usuarioRepository.getReferenceById(id);
+
+        serviceFood.validaSenha(validaLoginDTO.password());
+
+        usuario.atualizarPassWord(validaLoginDTO.password());
 
         usuarioRepository.save(usuario);
 
