@@ -1,6 +1,7 @@
 package com.restaurant.WeFood.service.validadores;
 
 import com.restaurant.WeFood.entity.Usuario;
+import com.restaurant.WeFood.exceptions.ResourceNotFoundException;
 import com.restaurant.WeFood.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,17 +15,25 @@ public class ValidaLoginImpl implements ValidaLogin {
     UsuarioRepository usuarioRepository;
 
     public String validar(String email, String password){
-        Optional<Usuario> existsUser = usuarioRepository.findByEmail(email);
-        if(!existsUser.isPresent()){
-            throw new RuntimeException("Usuário não possui cadastro");
+
+        if(email == null || email.isBlank()){
+            throw new ResourceNotFoundException("É necessário informar o email!");
         }
 
-            Usuario usuario = existsUser.get();
+        Optional<Usuario> existeUser = usuarioRepository.findByEmail(email);
+        if (existeUser.isEmpty()){
+            throw new ResourceNotFoundException("Usuário não possui cadastro!");
+        }
 
-                 if (!usuario.getPassword().equals(password)) {
-                     throw new RuntimeException("Email ou Senha incorretos!");
-                 }
+        Usuario usuario = existeUser.get();
 
-                 return "Login efetuado com sucesso!";
+        if (password == null || password.isBlank()){
+            throw new ResourceNotFoundException("É necessário infromar a senha do usuário.");
+        }
+
+        if (!usuario.getPassword().equals(password)){
+            throw new ResourceNotFoundException("Email ou senha incorretos!");
+        }
+        return "Login efetuado com sucesso!";
     }
 }

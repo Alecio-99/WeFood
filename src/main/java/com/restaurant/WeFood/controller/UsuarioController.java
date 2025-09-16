@@ -5,6 +5,7 @@ import com.restaurant.WeFood.DTO.DetalheUsuarioDTO;
 import com.restaurant.WeFood.DTO.UsuarioDTO;
 import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import com.restaurant.WeFood.entity.Usuario;
+import com.restaurant.WeFood.exceptions.ResourceNotFoundException;
 import com.restaurant.WeFood.repository.UsuarioRepository;
 import com.restaurant.WeFood.service.ServiceFood;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,12 +46,16 @@ public class UsuarioController {
         return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
     }
 
-    @GetMapping("/nome/{name}")
-    public ResponseEntity<?> buscarPorNome(@PathVariable String name) {
+    @GetMapping({"/", "/{name}"})
+    public ResponseEntity<?> buscarPorNome(@PathVariable(required = false) String name) {
+        if(name == null || name.isBlank()){
+            throw new ResourceNotFoundException("Nome não informado");
+        }
+
         List<Usuario> usuarios = usuarioRepository.findByNameContainingIgnoreCase(name);
 
         if (usuarios.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            throw new ResourceNotFoundException("Nenhum usuário encontrado com o nome:" + name);
         }
 
         return ResponseEntity.ok(usuarios.stream().map(DetalheUsuarioDTO::new).toList());
