@@ -29,4 +29,11 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.status(status.value()).body(new ValidationErrorDTO(errors, status.value()));
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ValidationErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
+        var status = HttpStatus.BAD_REQUEST;
+        List<String> errors = List.of(ex.getMessage());
+        return ResponseEntity.status(status.value())
+                .body(new ValidationErrorDTO(errors, status.value()));
+    }
 }

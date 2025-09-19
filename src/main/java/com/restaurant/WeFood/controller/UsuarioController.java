@@ -79,9 +79,14 @@ public class UsuarioController {
         return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity atualizaUser(@PathVariable Long id, @RequestBody @Valid AtualizaUsuarioDTO atualizaUsuarioDTO) {
-        var usuario = usuarioRepository.getReferenceById(id);
+        var usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario não encontrado com o id: " + id));
+       // usuario.atualizarUsuario(atualizaUsuarioDTO);
+
+        serviceFood.validaAtualizaUsuario(atualizaUsuarioDTO);
+
         usuario.atualizarUsuario(atualizaUsuarioDTO);
 
         usuarioRepository.save(usuario);

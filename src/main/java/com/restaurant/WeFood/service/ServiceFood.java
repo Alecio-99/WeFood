@@ -1,5 +1,6 @@
 package com.restaurant.WeFood.service;
 
+import com.restaurant.WeFood.DTO.AtualizaUsuarioDTO;
 import com.restaurant.WeFood.service.validadores.ValidaLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,5 +17,8 @@ public class ServiceFood {
     }
     public void validaSenha(String password){
           valida.validaSenha(password);
+    }
+    public void validaAtualizaUsuario(AtualizaUsuarioDTO atualizaUsuarioDTO){
+           valida.validaAtualizaUsuario(atualizaUsuarioDTO);
     }
 }
