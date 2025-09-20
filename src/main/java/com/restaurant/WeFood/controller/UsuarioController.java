@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +42,7 @@ public class UsuarioController {
             throw new RuntimeException("O email utilizado já possui cadastro!");
         }
         usuarioRepository.save(usuario);
+        usuario.setDataCadastro(LocalDateTime.now());
 
         var uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
@@ -76,6 +78,7 @@ public class UsuarioController {
         usuario.atualizarPassWord(validaLoginDTO.password());
 
         usuarioRepository.save(usuario);
+        usuario.setUltimaAtualizacao(LocalDateTime.now());
 
         return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
     }
@@ -91,6 +94,7 @@ public class UsuarioController {
         usuario.atualizarUsuario(atualizaUsuarioDTO);
 
         usuarioRepository.save(usuario);
+        usuario.setUltimaAtualizacao(LocalDateTime.now());
 
         return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
     }
