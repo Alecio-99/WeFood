@@ -68,7 +68,8 @@ public class UsuarioController {
 
     @PutMapping("/senha/{id}")
     public ResponseEntity atualizarSenha(@PathVariable Long id, @RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
-        var usuario = usuarioRepository.getReferenceById(id);
+        var usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario não encontrado com o id: " + id));
 
         serviceFood.validaSenha(validaLoginDTO.password());
 
@@ -97,7 +98,7 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity deletaUsuario(@PathVariable Long id){
         if(!usuarioRepository.existsById(id)){
-            return ResponseEntity.notFound().build();
+           throw new ResourceNotFoundException("Usuario não encontrado com o id: " + id);
         }
           usuarioRepository.deleteById(id);
        return ResponseEntity.noContent().build();
