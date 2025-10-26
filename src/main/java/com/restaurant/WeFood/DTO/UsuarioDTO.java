@@ -6,17 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record UsuarioDTO(
-        @NotBlank(message = "O nome não pode ser nulo ou vazio")
-        String name,
-        @NotBlank(message = "O email não pode ser nulo ou vazio")
-        @Email
-        String email,
-        @NotBlank(message = "A senha não pode ser nulo ou vazio")
-        String password,
-        @NotNull
-        @Valid
-        DadosEnderecoDTO endereco
-) {
+        @NotBlank String name,
+        @NotBlank @Email String email,
+        @NotBlank String password,
+        @NotNull @Valid DadosEnderecoDTO endereco,
+        @NotNull Long perfilId
+) {}
 
-
-}
