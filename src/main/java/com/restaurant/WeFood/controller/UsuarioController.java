@@ -5,106 +5,71 @@ import com.restaurant.WeFood.DTO.DetalheUsuarioDTO;
 import com.restaurant.WeFood.DTO.UsuarioDTO;
 import com.restaurant.WeFood.DTO.ValidaLoginDTO;
 import com.restaurant.WeFood.entity.Usuario;
-import com.restaurant.WeFood.exceptions.ResourceNotFoundException;
-import com.restaurant.WeFood.repository.UsuarioRepository;
+import com.restaurant.WeFood.enums.PerfilUsuario;
 import com.restaurant.WeFood.service.ServiceFood;
+import com.restaurant.WeFood.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("usuario")
 @Tag(name = "WeFood", description = "Controller para o crud de cadastro para o usuarios")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    UsuarioRepository usuarioRepository;
-
-    @Autowired
-    ServiceFood serviceFood;
+    private final UsuarioService usuarioService;
+    private final ServiceFood serviceFood; // mantendo seu fluxo atual de login/validação
 
     @PostMapping
-    public ResponseEntity cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO, UriComponentsBuilder uriBuilder) {
-        var usuario = new Usuario(usuarioDTO);
-
-        Optional<Usuario> existsUser = usuarioRepository.findByEmail(usuarioDTO.email());
-        if (existsUser.isPresent()) {
-            throw new RuntimeException("O email utilizado já possui cadastro!");
-        }
-        usuarioRepository.save(usuario);
-        usuario.setDataCadastro(LocalDateTime.now());
-
+    public ResponseEntity<?> cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO,
+                                             UriComponentsBuilder uriBuilder) {
+        Usuario usuario = usuarioService.criar(usuarioDTO);
         var uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
     }
 
+    // Mantendo sua rota original com PathVariable
     @GetMapping({"/", "/{name}"})
     public ResponseEntity<?> buscarPorNome(@PathVariable(required = false) String name) {
-        if(name == null || name.isBlank()){
-            throw new ResourceNotFoundException("Nome não informado");
-        }
-
-        List<Usuario> usuarios = usuarioRepository.findByNameContainingIgnoreCase(name);
-
-        if (usuarios.isEmpty()) {
-            throw new ResourceNotFoundException("Nenhum usuário encontrado com o nome:" + name);
-        }
-
-        return ResponseEntity.ok(usuarios.stream().map(DetalheUsuarioDTO::new).toList());
+        List<DetalheUsuarioDTO> resposta = usuarioService.buscarPorNome(name);
+        return ResponseEntity.ok(resposta);
     }
 
     @PostMapping("login")
-    public String login(@RequestBody ValidaLoginDTO validaLoginDTO) {
-        return serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
+    public ResponseEntity<?> login(@RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
+        var msg = serviceFood.validarLogin(validaLoginDTO.email(), validaLoginDTO.password());
+        return ResponseEntity.ok().body(msg);
     }
 
     @PutMapping("/senha/{id}")
-    public ResponseEntity atualizarSenha(@PathVariable Long id, @RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
-        var usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario não encontrado com o id: " + id));
-
-        serviceFood.validaSenha(validaLoginDTO.password());
-
-        usuario.atualizarPassWord(validaLoginDTO.password());
-
-        usuarioRepository.save(usuario);
-        usuario.setUltimaAtualizacao(LocalDateTime.now());
-
-        return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+    public ResponseEntity<?> atualizarSenha(@PathVariable Long id,
+                                            @RequestBody @Valid ValidaLoginDTO validaLoginDTO) {
+        DetalheUsuarioDTO dto = usuarioService.atualizarSenha(id, validaLoginDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity atualizaUser(@PathVariable Long id, @RequestBody @Valid AtualizaUsuarioDTO atualizaUsuarioDTO) {
-        var usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario não encontrado com o id: " + id));
-       // usuario.atualizarUsuario(atualizaUsuarioDTO);
-
-        serviceFood.validaAtualizaUsuario(atualizaUsuarioDTO);
-
-        usuario.atualizarUsuario(atualizaUsuarioDTO);
-
-        usuarioRepository.save(usuario);
-        usuario.setUltimaAtualizacao(LocalDateTime.now());
-
-        return ResponseEntity.ok(new DetalheUsuarioDTO(usuario));
+    public ResponseEntity<?> atualizaUser(@PathVariable Long id,
+                                          @RequestBody @Valid AtualizaUsuarioDTO atualizaUsuarioDTO) {
+        DetalheUsuarioDTO dto = usuarioService.atualizarParcial(id, atualizaUsuarioDTO);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deletaUsuario(@PathVariable Long id){
-        if(!usuarioRepository.existsById(id)){
-           throw new ResourceNotFoundException("Usuario não encontrado com o id: " + id);
-        }
-          usuarioRepository.deleteById(id);
-       return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deletaUsuario(@PathVariable Long id) {
+        usuarioService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/perfil/{nome}")
+    public ResponseEntity<List<DetalheUsuarioDTO>> listarPorPerfil(@PathVariable String nome) {
+        return ResponseEntity.ok(usuarioService.listarPorPerfilNome(nome));
+    }
+
 }
