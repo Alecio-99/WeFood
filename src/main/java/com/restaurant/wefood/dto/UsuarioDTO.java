@@ -1,0 +1,15 @@
+package com.restaurant.wefood.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record UsuarioDTO(
+        @NotBlank String name,
+        @NotBlank @Email String email,
+        @NotBlank String password,
+        @NotNull @Valid DadosEnderecoDTO endereco,
+        @NotNull Long perfilId
+) {}
+
