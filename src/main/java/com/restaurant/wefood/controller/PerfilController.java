@@ -28,4 +28,10 @@ public class PerfilController {
     public ResponseEntity<List<Perfil>> listar() {
         return ResponseEntity.ok(perfilService.listar());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletaUsuario(@PathVariable Long id) {
+        perfilService.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
