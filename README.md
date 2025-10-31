@@ -13,6 +13,7 @@
 3. [Descrição dos Endpoints Disponíveis](#3-descrição-dos-endpoints-disponíveis)
 4. [Descrição da Documentação Swagger](#4-descrição-da-documentação-swagger)
 5. [Considerações Adicionais](#5-considerações-adicionais)
+6. [Análise do que Falta no Projeto](#6-análise-do-que-falta-no-projeto)
 
 ---
 
@@ -437,11 +438,313 @@ A documentação gerada automaticamente incluirá informações como:
 
 ---
 
+## 6. ANÁLISE DO QUE FALTA NO PROJETO
+
+Esta seção apresenta uma análise detalhada do que ainda não foi implementado no projeto WeFood, tanto em relação a correções necessárias quanto a funcionalidades ausentes.
+
+### 6.1 Inconsistências e Correções Necessárias
+
+#### 6.1.1 Migrações Flyway Incompletas
+- **Problema:** As migrações SQL (`V1_Create_usuario_table.sql` e `V2__Add_indexes.sql`) não incluem a tabela `perfil`, mas a entidade `Usuario` possui relacionamento obrigatório com `Perfil`.
+- **Impacto:** A aplicação não pode ser inicializada corretamente com Flyway habilitado, pois a tabela `perfil` não existe nas migrações.
+- **Solução Necessária:** Criar migração `V3__Create_perfil_table.sql` para criar a tabela `perfil` e atualizar a tabela `usuario` com a coluna `perfil_id`.
+
+#### 6.1.2 Inconsistência na Documentação do README
+- **Base URL Incorreta:** O README menciona `http://localhost:8080/usuario`, mas o código real usa `http://localhost:8080/api/v1/usuario`.
+- **Endpoints de Perfil Não Documentados:** O `PerfilController` possui endpoints que não estão documentados no README:
+  - `POST /api/v1/perfis` - Criar perfil
+  - `GET /api/v1/perfis` - Listar perfis
+  - `DELETE /api/v1/perfis/{id}` - Deletar perfil
+- **Informação Desatualizada:** O README menciona que "senhas são armazenadas em texto plano", mas o código já implementa `BCryptPasswordEncoder` (já corrigido).
+- **Endpoint GET /usuario/{id} Ausente:** O README não documenta este endpoint, e ele também não existe no código.
+
+#### 6.1.3 Configuração de Segurança
+- **Problema:** A `SecurityConfig` permite acesso a `/usuario/**` e `/perfis/**`, mas os endpoints reais estão em `/api/v1/usuario` e `/api/v1/perfis`.
+- **Impacto:** A configuração de segurança pode não estar funcionando corretamente para os endpoints protegidos.
+- **Solução:** Atualizar os `requestMatchers` para incluir `/api/v1/**`.
+
+#### 6.1.4 Enum PerfilUsuario Não Utilizado
+- **Problema:** Existe um enum `PerfilUsuario` com valores `DONO` e `CLIENTE`, mas não está sendo usado em lugar algum do código.
+- **Impacto:** Código morto que pode confundir desenvolvedores.
+- **Solução:** Decidir se o enum deve ser utilizado ou removido.
+
+#### 6.1.5 Inconsistência nos Nomes de Colunas
+- **Problema:** A migração SQL usa nomes de colunas com espaços e caracteres especiais (`E-mail`, `Nome`), enquanto a entidade JPA usa nomes padrão (`email`, `nome`).
+- **Impacto:** Pode causar problemas de mapeamento entre a entidade e o banco de dados.
+- **Solução:** Padronizar os nomes das colunas entre migrações e entidades.
+
+### 6.2 Funcionalidades de Usuário Faltantes
+
+#### 6.2.1 Endpoints de Usuário Ausentes
+- **GET /api/v1/usuario/{id}** - Buscar usuário por ID específico
+  - **Descrição:** Retorna os dados completos de um usuário específico
+  - **Response:** `DetalheUsuarioDTO`
+- **GET /api/v1/usuario** - Listar todos os usuários (com paginação)
+  - **Descrição:** Retorna lista paginada de todos os usuários
+  - **Parâmetros:** page, size, sort
+- **PUT /api/v1/usuario/{id}** - Atualização completa de usuário
+  - **Descrição:** Atualiza todos os campos de um usuário (diferente do PATCH que é parcial)
+
+#### 6.2.2 Validações Faltantes
+- **Validação de Força de Senha:** Não há validação de complexidade de senha (mínimo de caracteres, letras maiúsculas, números, etc.)
+- **Validação de Email Duplicado na Atualização:** Não há verificação se o email já está em uso por outro usuário ao atualizar
+- **Validação de CEP Real:** O CEP é validado apenas por formato (8 dígitos), mas não há validação se é um CEP válido (integração com API de CEP)
+
+### 6.3 Funcionalidades Principais do Domínio WeFood Ausentes
+
+O projeto se chama **WeFood** e a descrição indica que é um sistema onde "os clientes escolhem restaurantes com base na comida oferecida", mas atualmente apenas o módulo de usuários está implementado. Faltam completamente as seguintes funcionalidades:
+
+#### 6.3.1 Módulo de Restaurantes
+- **Entidade Restaurante:**
+  - Dados do restaurante (nome, CNPJ, telefone, descrição)
+  - Endereço completo
+  - Horários de funcionamento
+  - Status (aberto/fechado)
+  - Avaliação média
+  - Relacionamento com Usuario (dono do restaurante via Perfil)
+  
+- **Endpoints Necessários:**
+  - `POST /api/v1/restaurantes` - Cadastrar restaurante
+  - `GET /api/v1/restaurantes` - Listar restaurantes (com filtros)
+  - `GET /api/v1/restaurantes/{id}` - Buscar restaurante por ID
+  - `GET /api/v1/restaurantes?cidade={cidade}` - Buscar por cidade
+  - `PUT /api/v1/restaurantes/{id}` - Atualizar restaurante
+  - `PATCH /api/v1/restaurantes/{id}/status` - Atualizar status
+  - `DELETE /api/v1/restaurantes/{id}` - Deletar restaurante
+
+#### 6.3.2 Módulo de Cardápio/Produtos
+- **Entidade Produto:**
+  - Nome do prato/produto
+  - Descrição
+  - Preço
+  - Categoria (entrada, prato principal, sobremesa, bebida)
+  - Disponibilidade
+  - Tempo de preparo
+  - Imagem
+  - Relacionamento com Restaurante (muitos para um)
+  
+- **Endpoints Necessários:**
+  - `POST /api/v1/restaurantes/{restauranteId}/produtos` - Adicionar produto ao cardápio
+  - `GET /api/v1/restaurantes/{restauranteId}/produtos` - Listar produtos do restaurante
+  - `GET /api/v1/produtos/{id}` - Buscar produto por ID
+  - `GET /api/v1/produtos?categoria={categoria}` - Buscar por categoria
+  - `PUT /api/v1/produtos/{id}` - Atualizar produto
+  - `DELETE /api/v1/produtos/{id}` - Remover produto
+
+#### 6.3.3 Módulo de Pedidos
+- **Entidade Pedido:**
+  - Status do pedido (pendente, confirmado, preparando, saiu para entrega, entregue, cancelado)
+  - Valor total
+  - Data/hora do pedido
+  - Relacionamento com Usuario (cliente)
+  - Relacionamento com Restaurante
+  - Itens do pedido (entidade PedidoItem)
+  - Endereço de entrega
+  - Forma de pagamento
+  
+- **Entidade PedidoItem:**
+  - Quantidade
+  - Preço unitário (snapshot)
+  - Observações
+  - Relacionamento com Produto
+  
+- **Endpoints Necessários:**
+  - `POST /api/v1/pedidos` - Criar pedido
+  - `GET /api/v1/pedidos` - Listar pedidos (com filtros)
+  - `GET /api/v1/pedidos/{id}` - Buscar pedido por ID
+  - `GET /api/v1/usuarios/{usuarioId}/pedidos` - Pedidos do cliente
+  - `GET /api/v1/restaurantes/{restauranteId}/pedidos` - Pedidos do restaurante
+  - `PATCH /api/v1/pedidos/{id}/status` - Atualizar status do pedido
+  - `DELETE /api/v1/pedidos/{id}` - Cancelar pedido
+
+#### 6.3.4 Módulo de Avaliações
+- **Entidade Avaliacao:**
+  - Nota (1 a 5 estrelas)
+  - Comentário
+  - Data da avaliação
+  - Relacionamento com Pedido
+  - Relacionamento com Restaurante
+  - Relacionamento com Usuario (avaliador)
+  
+- **Endpoints Necessários:**
+  - `POST /api/v1/pedidos/{pedidoId}/avaliacao` - Avaliar pedido/restaurante
+  - `GET /api/v1/restaurantes/{restauranteId}/avaliacoes` - Avaliações do restaurante
+  - `PUT /api/v1/avaliacoes/{id}` - Atualizar avaliação
+  - `DELETE /api/v1/avaliacoes/{id}` - Remover avaliação
+
+#### 6.3.5 Módulo de Carrinho de Compras
+- **Entidade Carrinho:**
+  - Itens do carrinho (entidade CarrinhoItem)
+  - Valor total
+  - Relacionamento com Usuario
+  - Relacionamento com Restaurante
+  
+- **Endpoints Necessários:**
+  - `POST /api/v1/carrinho/itens` - Adicionar item ao carrinho
+  - `GET /api/v1/carrinho` - Obter carrinho do usuário
+  - `PUT /api/v1/carrinho/itens/{id}` - Atualizar quantidade
+  - `DELETE /api/v1/carrinho/itens/{id}` - Remover item
+  - `DELETE /api/v1/carrinho` - Limpar carrinho
+
+### 6.4 Funcionalidades de Segurança e Autenticação Faltantes
+
+#### 6.4.1 Autenticação com JWT
+- **Problema:** O sistema possui apenas validação de login básica, mas não gera tokens de autenticação.
+- **Implementação Necessária:**
+  - Geração de JWT após login bem-sucedido
+  - Refresh tokens
+  - Endpoint para renovar token
+  - Filtros de segurança para validar JWT nas requisições
+  - Configuração de expiração de tokens
+
+#### 6.4.2 Autorização Baseada em Perfis
+- **Problema:** Existe a entidade Perfil, mas não há controle de acesso baseado em perfis.
+- **Implementação Necessária:**
+  - Anotações `@PreAuthorize` ou `@Secured` nos endpoints
+  - Definir quais endpoints cada perfil pode acessar:
+    - **CLIENTE:** Pode fazer pedidos, avaliar, ver seu próprio carrinho
+    - **DONO:** Pode gerenciar restaurante, cardápio, ver pedidos do restaurante
+  - Middleware para verificar permissões
+
+#### 6.4.3 Recuperação de Senha
+- **Endpoints Necessários:**
+  - `POST /api/v1/usuario/esqueci-senha` - Solicitar recuperação de senha
+  - `POST /api/v1/usuario/recuperar-senha/{token}` - Redefinir senha com token
+
+### 6.5 Infraestrutura e Qualidade Faltantes
+
+#### 6.5.1 Testes
+- **Problema:** Não existe pasta `src/test` nem testes implementados.
+- **Testes Necessários:**
+  - Testes unitários para Services
+  - Testes unitários para Controllers (MockMvc)
+  - Testes de integração para Repositories
+  - Testes de integração end-to-end para endpoints
+  - Testes de validação
+  - Cobertura de código mínima recomendada: 70-80%
+
+#### 6.5.2 Logging Estruturado
+- **Problema:** Não há logging estruturado implementado.
+- **Implementação Necessária:**
+  - Logging de requisições HTTP (entrada e saída)
+  - Logging de erros com stack traces
+  - Logging de operações importantes (criação de pedidos, login, etc.)
+  - Uso de SLF4J com Logback
+  - Configuração de níveis de log por ambiente
+
+#### 6.5.3 Monitoramento e Métricas
+- **Health Checks:**
+  - Endpoint `/actuator/health` (Spring Boot Actuator)
+  - Health check do banco de dados
+  - Health check de serviços externos
+  
+- **Métricas:**
+  - Spring Boot Actuator com Prometheus
+  - Métricas de performance (tempo de resposta, taxa de erro)
+  - Métricas de negócio (pedidos criados, usuários cadastrados)
+
+#### 6.5.4 Tratamento de Erros Melhorado
+- **Problemas Atuais:**
+  - Nem todos os tipos de exceção estão sendo tratados
+  - Falta padronização nas mensagens de erro
+  - Falta códigos de erro customizados
+  
+- **Melhorias Necessárias:**
+  - Mapear todas as exceções conhecidas
+  - Criar códigos de erro padronizados
+  - Adicionar logging de erros antes de retornar resposta
+
+### 6.6 Documentação Faltante
+
+#### 6.6.1 Documentação de API
+- **Swagger/OpenAPI:**
+  - Adicionar exemplos de request/response mais detalhados
+  - Documentar códigos de erro possíveis para cada endpoint
+  - Adicionar descrições mais completas nos endpoints
+  
+#### 6.6.2 Documentação Técnica
+- **README Completo:**
+  - Guia de instalação e configuração
+  - Guia de desenvolvimento
+  - Estrutura do banco de dados completa
+  - Diagrama de arquitetura
+  - Diagrama de entidades e relacionamentos
+  
+#### 6.6.3 Documentação de Deploy
+- **Guia de Deploy:**
+  - Instruções para deploy em produção
+  - Configuração de variáveis de ambiente
+  - Estratégias de rollback
+  - Documentação do Docker Compose
+
+### 6.7 Funcionalidades Adicionais Recomendadas
+
+#### 6.7.1 Integração com Serviços Externos
+- **API de CEP:**
+  - Validação e preenchimento automático de endereço via ViaCEP ou similar
+  
+- **Gateway de Pagamento:**
+  - Integração com Stripe, Mercado Pago ou similar
+  - Processamento de pagamentos
+  
+- **Serviço de Notificações:**
+  - Notificações por email (confirmação de pedido, atualização de status)
+  - Notificações push (opcional)
+  
+- **Serviço de Geocodificação:**
+  - Calcular distância entre restaurante e cliente
+  - Calcular tempo estimado de entrega
+
+#### 6.7.2 Cache
+- **Implementação de Cache:**
+  - Cache de listagens de restaurantes
+  - Cache de cardápios
+  - Redis para sessões e cache distribuído
+
+#### 6.7.3 Paginação e Filtros
+- **Melhorias:**
+  - Paginação em todos os endpoints de listagem
+  - Filtros avançados (busca por nome, categoria, preço, etc.)
+  - Ordenação customizável
+
+#### 6.7.4 Upload de Imagens
+- **Funcionalidade:**
+  - Upload de imagem de perfil do usuário
+  - Upload de fotos dos produtos
+  - Upload de logo do restaurante
+  - Integração com serviço de armazenamento (AWS S3, Google Cloud Storage)
+
+### 6.8 Resumo das Prioridades
+
+#### 🔴 Crítico (Deve ser corrigido imediatamente)
+1. Corrigir migrações Flyway para incluir tabela `perfil`
+2. Corrigir configuração de segurança (`SecurityConfig`)
+3. Criar testes básicos para garantir qualidade do código
+4. Atualizar documentação do README com informações corretas
+
+#### 🟡 Importante (Deve ser implementado em breve)
+1. Implementar autenticação JWT
+2. Implementar módulo de Restaurantes
+3. Implementar módulo de Cardápio/Produtos
+4. Implementar módulo de Pedidos
+5. Adicionar autorização baseada em perfis
+
+#### 🟢 Desejável (Pode ser implementado depois)
+1. Módulo de Avaliações
+2. Módulo de Carrinho
+3. Integrações externas (CEP, pagamento)
+4. Upload de imagens
+5. Sistema de notificações
+
+---
+
 ## CONCLUSÃO
 
 Este relatório apresenta uma análise completa da aplicação WeFood, cobrindo todos os aspectos solicitados: arquitetura, modelagem de dados, endpoints e documentação Swagger. A aplicação demonstra uma estrutura bem organizada seguindo padrões de desenvolvimento Java/Spring Boot, com separação clara de responsabilidades e implementação adequada de validações e tratamento de erros.
 
 A documentação Swagger está configurada e funcionando, proporcionando uma interface interativa para testar e entender os endpoints da API. O sistema está preparado para expansão futura com a adição de novas funcionalidades relacionadas ao domínio de delivery de comida.
+
+**Nota:** A seção "Análise do que Falta no Projeto" (Seção 6) identifica as principais lacunas do projeto, incluindo inconsistências que precisam ser corrigidas e funcionalidades do domínio WeFood que ainda não foram implementadas. Recomenda-se priorizar as correções críticas antes de avançar com novas funcionalidades.
 
 ---
 
