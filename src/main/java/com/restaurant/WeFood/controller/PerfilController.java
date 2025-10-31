@@ -10,7 +10,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("perfis")
+@RequestMapping("api/v1/perfis")
 @RequiredArgsConstructor
 public class PerfilController {
 
@@ -20,7 +20,7 @@ public class PerfilController {
     public ResponseEntity<Perfil> criar(@RequestBody Perfil perfil) {
         var saved = perfilService.criar(perfil);
         return ResponseEntity
-                .created(URI.create("/perfis/" + saved.getId()))
+                .created(URI.create("/api/v1/perfis/" + saved.getId()))
                 .body(saved);
     }
 

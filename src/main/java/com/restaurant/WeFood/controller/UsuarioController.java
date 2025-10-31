@@ -18,19 +18,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("usuario")
+@RequestMapping("api/v1/usuario")
 @Tag(name = "WeFood", description = "Controller para o crud de cadastro para o usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    private final ServiceFood serviceFood; // mantendo seu fluxo atual de login/validação
+    private final ServiceFood serviceFood;
 
     @PostMapping
     public ResponseEntity<?> cadastroUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO,
                                              UriComponentsBuilder uriBuilder) {
         Usuario usuario = usuarioService.criar(usuarioDTO);
-        var uri = uriBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
+        var uri = uriBuilder.path("/api/v1/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetalheUsuarioDTO(usuario));
     }
 
